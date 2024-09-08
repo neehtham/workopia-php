@@ -10,7 +10,7 @@
     <link
         href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.7/dist/tailwind.min.css"
         rel="stylesheet" />
-    <title>Workopia</title>
+    <title>Workopias</title>
 </head>
 
 <body class="bg-gray-100">
