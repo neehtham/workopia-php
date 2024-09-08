@@ -31,3 +31,15 @@ function loadview($name)
 {
     require basePath("views/{$name}.view.php");
 }
+
+/**
+ * inspect a value and die
+ * @param mixed $value
+ * @return void
+ */
+function inspect($value)
+{
+    echo '<pre>';
+    die(var_dump($value));
+    echo '</pre>';
+}

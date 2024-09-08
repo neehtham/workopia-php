@@ -1,6 +1,5 @@
 <?php loadpartial('head') ?>
 <?php loadpartial('Nav') ?>
-<?php loadpartial('showCase') ?>
 <?php loadpartial('topBanner') ?>
 
 <!-- Job Listings -->
