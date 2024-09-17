@@ -16,7 +16,7 @@ function basePath($path = '')
  * @return void
  */
 
-function loadpartial($partial)
+function loadPartial($partial)
 {
     require basePath("views/partials/{$partial}.php");
 }
@@ -27,9 +27,13 @@ function loadpartial($partial)
  * @return void
  */
 
-function loadview($name)
+function loadView($name, $data = [])
 {
-    require basePath("views/{$name}.view.php");
+    $viewPath = basePath("views/{$name}.view.php");
+    if (file_exists($viewPath)) {
+        extract($data);
+        require $viewPath;
+    }
 }
 
 /**
@@ -42,4 +46,9 @@ function inspect($value)
     echo '<pre>';
     die(var_dump($value));
     echo '</pre>';
+}
+
+function formatSalary($salary)
+{
+    return '$' . number_format(floatval($salary));
 }

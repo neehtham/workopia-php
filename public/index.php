@@ -1,14 +1,16 @@
 <?php
+
 require '../helpers.php';
-$routes = [
-    '/' => 'controller/home.php',
-    '/listings' => 'controller/listings/index.php',
-    '/listings/create' => 'controller/listings/create.php',
-    '404' => 'controller/error/404.php',
-];
-$uri = $_SERVER['REQUEST_URI'];
-if (array_key_exists($uri, $routes)) {
-    require(basePath($routes[$uri]));
-} else {
-    require(basePath($routes['404']));
-};
+
+require basePath('Database.php');
+require basePath('Router.php');
+
+// enabling the router and getting the routes
+$router = new Router();
+require basePath('routes.php');
+
+// current URI and method
+$uri = parse_url($_SERVER['REQUEST_URI'], PHP_URL_PATH);
+$method = $_SERVER['REQUEST_METHOD'];
+// passing URI in the route
+$router->route($uri, $method);
