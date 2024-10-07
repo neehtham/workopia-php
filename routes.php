@@ -1,6 +1,12 @@
 <?php
-$router->get('/', 'controller/home.php');
-$router->get('/login', 'controller/login.php');
-$router->get('/listings', 'controller/listings/index.php',);
-$router->get('/listings/create', 'controller/listings/create.php',);
-$router->get('/listing', 'controller/listings/show.php',);
+$router->get('/', 'HomeController@index');
+$router->get('/listings', 'ListingController@index');
+$router->get('/listings/create', 'ListingController@create');
+$router->get('/listing/edit/{id}', 'ListingController@edit');
+$router->get('/listing/{id}', 'ListingController@show');
+
+$router->post('/listings', 'ListingController@store');
+
+$router->put('/listing/{id}', 'ListingController@update');
+
+$router->delete('/listing/{id}', 'ListingController@destroy');

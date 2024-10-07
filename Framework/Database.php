@@ -1,5 +1,9 @@
 <?php
 
+namespace Framework;
+
+use PDO, \Exception, PDOException;
+
 class Database
 {
     public $conn;
@@ -40,7 +44,7 @@ class Database
             $stch->execute();
             return $stch;
         } catch (PDOException $e) {
-            new Exception("query failed to execute: {$e->getMessage()}");
+            throw new Exception("query failed to execute: {$e->getMessage()}");
         }
     }
 }
