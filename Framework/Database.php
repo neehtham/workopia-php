@@ -42,6 +42,7 @@ class Database
                 $stch->bindValue(':' . $pram, $value);
             };
             $stch->execute();
+            //inspectDie($stch);
             return $stch;
         } catch (PDOException $e) {
             throw new Exception("query failed to execute: {$e->getMessage()}");

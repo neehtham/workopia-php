@@ -16,9 +16,13 @@ function basePath($path = '')
  * @return void
  */
 
-function loadPartial($partial)
+function loadPartial($partial, $data = [])
 {
-    require basePath("App/views/partials/{$partial}.php");
+    $partialPath = basePath("App/views/partials/{$partial}.php");
+    if (file_exists($partialPath)) {
+        extract($data);
+        require $partialPath;
+    }
 }
 
 /**
@@ -33,6 +37,8 @@ function loadView($name, $data = [])
     if (file_exists($viewPath)) {
         extract($data);
         require $viewPath;
+    } else {
+        echo "could not load {$name} partial";
     }
 }
 

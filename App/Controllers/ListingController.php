@@ -4,6 +4,8 @@ namespace App\Controllers;
 
 use Framework\Database;
 use Framework\Validation;
+use Framework\Session;
+use Framework\Authorization;
 
 class ListingController
 {
@@ -20,7 +22,7 @@ class ListingController
      */
     public function index()
     {
-        $listings = $this->db->query('SELECT * FROM listings ')->fetchAll();
+        $listings = $this->db->query('SELECT * FROM listings ORDER BY created_at DESC')->fetchAll();
         loadview('listings/index', ['listings' => $listings]);
     }
     /**
@@ -61,7 +63,7 @@ class ListingController
     {
         $allowedFeilds = ['title', 'description', 'salary', 'tags', 'company', 'city', 'country', 'phone', 'email', 'requierments', 'benifits'];
         $newListingsData = array_intersect_key($_POST, array_flip($allowedFeilds));
-        $newListingsData['user_id'] = 1;
+        $newListingsData['user_id'] = Session::get('user')['id'];
 
         $newListingsData = array_map('sanitize', $newListingsData);  // loop through the array and convert the strigs to keys
         $errors = [];
@@ -90,6 +92,7 @@ class ListingController
             $values = implode(', ', $values);
             $query = "INSERT INTO listings ({$feilds}) VALUES ({$values})";
             $this->db->query($query, $newListingsData);
+            Session::setFlashmessage('success_message', 'Listing created successfully');
             redirect('/listings');
         }
     }
@@ -101,15 +104,16 @@ class ListingController
     public function destroy($params)
     {
         $id = $params['id'];
-        //inspectDie($params);
         $prams = ['id' => $id];
         $listings = $this->db->query('SELECT * FROM listings WHERE id = :id', $prams)->fetch();
         if (!$listings) {
             ErrorController::notfound('Listing not found');
-            return;
+        } elseif (!Authorization::isOwner($listings['user_id'])) {
+            Session::setFlashmessage('error_message', 'you are not authorized to delete delete this listing');
+            redirect('/listing/' . $listings['id']);
         } else {
             $this->db->query('DELETE FROM listings WHERE id = :id', $prams);
-            $_SESSION['success_message'] = 'Listing deleted successfully';
+            Session::setFlashmessage('success_message', 'Listing deleted successfully');
             redirect('/listings');
         }
     }
@@ -131,6 +135,10 @@ class ListingController
         if (!$listings) {
             ErrorController::notfound('Listing not found');
             return;
+        }
+        if (!Authorization::isOwner($listings['user_id'])) {
+            Session::setFlashmessage('error_message', 'you are not authorized to update this listing');
+            redirect('/listing/' . $listings['id']);
         } else {
             loadview('listings/edit', ['listings' => $listings]);
         }
@@ -152,6 +160,11 @@ class ListingController
             ErrorController::notfound('Listing not found');
             return;
         }
+
+        if (!Authorization::isOwner($listings['user_id'])) {
+            Session::setFlashmessage('error_message', 'you are not authorized to update this listing');
+            redirect('/listing/' . $listings['id']);
+        }
         $allowedFeilds = ['title', 'description', 'salary', 'tags', 'company', 'city', 'country', 'phone', 'email', 'requierments', 'benifits'];
         $updateValues = [];
         $updateValues = array_intersect_key($_POST, array_flip($allowedFeilds));
@@ -160,6 +173,7 @@ class ListingController
 
         $requieredFelids = ['title', 'description', 'email', 'city', 'country'];
         $errors = [];
+
         // running validation 
         foreach ($requieredFelids as $feild) {
             if (empty($updateValues[$feild]) || !Validation::string($updateValues[$feild])) {
@@ -179,9 +193,30 @@ class ListingController
             $updateQuery = "UPDATE listings SET $updateFeilds WHERE id = :id";
 
             $this->db->query($updateQuery, $updateValues);
-            $_SESSION['success message'] = 'listing updated';
+            Session::setFlashmessage('success_message', 'Listing updated successfully');
 
             redirect('/listing/' . $id);
         }
+    }
+    /**
+     * search listings by keyword/location
+     * @return void
+     */
+    public function search()
+    {
+        $keywords = isset($_GET['keywords']) ? $_GET['keywords'] : '';
+        $location = isset($_GET['location']) ? $_GET['location'] : '';
+
+        $params = [
+            'keywords' => "%{$keywords}%",
+            'location' => "%{$location}%"
+        ];
+
+        $query = "SELECT * FROM listings WHERE (title LIKE :keywords OR company LIKE :keywords OR tags LIKE :keywords OR description LIKE :keywords) AND(city LIKE :location OR country LIKE :location)";
+        $listings = $this->db->query($query, $params)->fetchAll();
+        loadView('listings/index', [
+            'listings' => $listings,
+            'keywords' => $keywords . ' ' . $location,
+        ]);
     }
 }
